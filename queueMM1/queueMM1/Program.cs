@@ -17,10 +17,10 @@ namespace queueMM1
 					File.Delete("planilha.csv");
 			}
 			catch (Exception) { }
-
 			StreamWriter file = new StreamWriter("planilha.csv");
 
-			int SEED;
+            #region Inputs
+            int SEED;
 			Console.WriteLine("Valor inicial ou semente:");
 			SEED = Convert.ToInt32(Console.ReadLine());
 
@@ -29,85 +29,133 @@ namespace queueMM1
 			int numberOfClients;
 			Console.WriteLine("Quantidade de testes a serem realiza:");
 			numberOfClients = Convert.ToInt32(Console.ReadLine());
-
-			//Definitions
-			decimal timeBetweenArrivals = 0;
+            #endregion
+        
+            #region Definitions
+            decimal timeBetweenArrivals = 0;
 			decimal serviceTime = 0;
 			decimal timeCurrent = 0;
 			decimal initialTime = 0;
 			decimal finalTime = 0;
 			decimal queuingTime = 0;
-			decimal systemTime = 0;
-			decimal numberOfPeopleInQueue = 0;
 			decimal freeTime = 0;
+           
+            List<Arrival> listQueuing = new List<Arrival>();
+            #endregion
 
-			decimal[] lastFinalTimes = new decimal[10000];
+            #region Process
 
-			for (int iCont = 0; iCont < numberOfClients; iCont++)
+            for (int iCont = 0; iCont < numberOfClients; iCont++)
 			{
-				timeBetweenArrivals = random.Next();
-				serviceTime = random.Next();
+                Arrival newArrival = new Arrival();
 
-				if (timeBetweenArrivals <= 0.52M)
-					timeBetweenArrivals = 1;
-				else if (timeBetweenArrivals <= 0.8M)
-					timeBetweenArrivals = 3;
-				else if (timeBetweenArrivals <= 0.9M)
-					timeBetweenArrivals = 5;
-				else if (timeBetweenArrivals <= 0.96M)
-					timeBetweenArrivals = 7;
-				else if (timeBetweenArrivals <= 1.0M)
-					timeBetweenArrivals = 9;
-
-				if (serviceTime <= 0.5M)
-					serviceTime = 1.25M;
-				else if (serviceTime <= 0.82M)
-					serviceTime = 3.75M;
-				else if (serviceTime <= 0.9M)
-					serviceTime = 6.25M;
-				else if (serviceTime <= 0.94M)
-					serviceTime = 8.75M;
-				else if (serviceTime <= 1.0M)
-					serviceTime = 11.25M;
+                timeBetweenArrivals = GetRandomTimeBetweeArrival(random.Next());
+                serviceTime = GetRandomServiceTime(random.Next());
 
 				timeCurrent += timeBetweenArrivals;
 
-				queuingTime = 0;
+                #region Calculate
+                queuingTime = 0;
 				if (timeCurrent < finalTime)
 					queuingTime = (finalTime - timeCurrent);
 
-				if (queuingTime > 0)
-					numberOfPeopleInQueue += 1;
+                // If there's queuingTime, We need to add a person to the Queue
+                if (queuingTime > 0)
+                    listQueuing.Add(newArrival);
 
-				initialTime = timeCurrent + queuingTime;
-				freeTime = initialTime - finalTime;
-				finalTime = initialTime + serviceTime;
-				systemTime = queuingTime + serviceTime;
+                initialTime = timeCurrent + queuingTime;
+                freeTime = initialTime - finalTime;
 
-				file.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8}",
-					timeBetweenArrivals, serviceTime, timeCurrent, initialTime, finalTime, queuingTime, systemTime, numberOfPeopleInQueue, freeTime
-					));
+                //Calculate new finalTime
+                finalTime = initialTime + serviceTime;
 
+                #endregion
+
+                #region Creating Arrival Object
+
+                newArrival.TimeBetweenArrivals = timeBetweenArrivals;
+                newArrival.ServiceTime = serviceTime;
+                newArrival.TimeCurrent = timeCurrent;
+                newArrival.QueuingTime = queuingTime;
+                newArrival.NumberOfPeopleInQueue = listQueuing.Count;
+                newArrival.FreeTime = freeTime;
+                newArrival.FinalTime = finalTime;
+
+                #endregion
+
+                #region Output
+
+                //Output to a file
+                file.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8}",
+					newArrival.TimeBetweenArrivals, 
+                    newArrival.ServiceTime,
+                    newArrival.TimeCurrent,
+                    newArrival.InitialTime,
+                    newArrival.FinalTime,
+                    newArrival.QueuingTime,
+                    newArrival.SystemTime,
+                    newArrival.NumberOfPeopleInQueue,
+                    newArrival.FreeTime
+				));
+
+                //Output to Console
 				Console.WriteLine(
 					String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8}",
-					timeBetweenArrivals, serviceTime, timeCurrent, initialTime, finalTime, queuingTime, systemTime, numberOfPeopleInQueue, freeTime
-					)
-					);
+                    newArrival.TimeBetweenArrivals,
+                    newArrival.ServiceTime,
+                    newArrival.TimeCurrent,
+                    newArrival.InitialTime,
+                    newArrival.FinalTime,
+                    newArrival.QueuingTime,
+                    newArrival.SystemTime,
+                    newArrival.NumberOfPeopleInQueue,
+                    newArrival.FreeTime
+                ));
 
-				for (int jCont = 0; jCont < 10000; jCont++)
-				{
-					if ((lastFinalTimes[jCont] > 0) && (lastFinalTimes[jCont] < timeCurrent))
-					{
-						lastFinalTimes[jCont] = 0;
-						numberOfPeopleInQueue -= 1;
-					}
-				}
+                #endregion
 
-				if (queuingTime > 0)
-					lastFinalTimes[iCont] = finalTime;
+                #region Decrease People in Queue
+                for (int jCont = listQueuing.Count - 1; jCont >= 0; jCont--)
+                {
+                    if (listQueuing[jCont].FinalTime < timeCurrent)
+                        listQueuing.RemoveAt(jCont);
+                }
+                #endregion
+
 			}
+            #endregion
 
-			Console.ReadKey();
+            Console.ReadKey();
 		}
-	}
+
+        private static decimal GetRandomTimeBetweeArrival(decimal timeBetweenArrivals)
+        {
+            if (timeBetweenArrivals <= 0.52M)
+                return 1;
+            else if (timeBetweenArrivals <= 0.8M)
+                return 3;
+            else if (timeBetweenArrivals <= 0.9M)
+                return 5;
+            else if (timeBetweenArrivals <= 0.96M)
+                return 7;
+
+            //else if (timeBetweenArrivals <= 1.0M)
+            return 9;
+        }
+
+        private static decimal GetRandomServiceTime(decimal serviceTime)
+        {
+            if (serviceTime <= 0.5M)
+                return 1.25M;
+            else if (serviceTime <= 0.82M)
+                return 3.75M;
+            else if (serviceTime <= 0.9M)
+                return 6.25M;
+            else if (serviceTime <= 0.94M)
+                return 8.75M;
+
+            //else if (serviceTime <= 1.0M)
+            return 11.25M;
+        }
+    }
 }
