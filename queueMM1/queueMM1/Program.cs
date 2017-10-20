@@ -39,11 +39,19 @@ namespace queueMM1
 			decimal finalTime = 0;
 			decimal queuingTime = 0;
 			decimal freeTime = 0;
-           
+
+            decimal avgTimeBetweenArrivals = 0;
+            decimal avgServiceTime = 0;
+            decimal avgQueuingTime = 0;
+            decimal avgSystemTime = 0;
+
             List<Arrival> listQueuing = new List<Arrival>();
+            List<Arrival> listArrivals = new List<Arrival>();
+
+            List<Replica> listReplicas = new List<Replica>();
             #endregion
 
-            #region Process
+            #region Process 
 
             for (int iCont = 0; iCont < numberOfClients; iCont++)
 			{
@@ -80,6 +88,7 @@ namespace queueMM1
                 newArrival.NumberOfPeopleInQueue = listQueuing.Count;
                 newArrival.FreeTime = freeTime;
                 newArrival.FinalTime = finalTime;
+                listArrivals.Add(newArrival);
 
                 #endregion
 
@@ -123,7 +132,42 @@ namespace queueMM1
                 #endregion
 
 			}
+
+            #region Calculate statistics
+            foreach (Arrival arrival in listArrivals)
+            {
+                avgQueuingTime += arrival.QueuingTime;
+                avgSystemTime += arrival.SystemTime;
+                avgTimeBetweenArrivals += arrival.TimeBetweenArrivals;
+                avgServiceTime += arrival.ServiceTime;
+            }
+            avgQueuingTime = avgQueuingTime / numberOfClients;
+            avgSystemTime = avgSystemTime / numberOfClients;
+            avgTimeBetweenArrivals = avgTimeBetweenArrivals / numberOfClients;
+            avgServiceTime = avgServiceTime / numberOfClients;
             #endregion
+
+            #region Creating Replica Object
+            Replica newReplica = new Replica();
+            newReplica.AvgQueuingTime = avgQueuingTime;
+            newReplica.AvgSystemTime = avgSystemTime;
+            newReplica.AvgTimeBetweenArrivals = avgTimeBetweenArrivals;
+            newReplica.AvgServiceTime = avgServiceTime;
+            listReplicas.Add(newReplica);
+
+
+            Console.WriteLine(
+                String.Format(
+                    "Média tempo de fila: {0}\n" +
+                    "Média tempo de sistema: {1}\n" +
+                    "Média tempo entre chegadas: {2}\n" +
+                    "Média tempo de serviço: {3}"
+                    , newReplica.AvgQueuingTime, newReplica.AvgSystemTime, newReplica.AvgTimeBetweenArrivals, newReplica.AvgServiceTime
+                ));
+            #endregion
+
+            #endregion
+
 
             Console.ReadKey();
 		}

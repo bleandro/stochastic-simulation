@@ -46,6 +46,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RandomNumberGenerator.cs" />
+    <Compile Include="Replica.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
