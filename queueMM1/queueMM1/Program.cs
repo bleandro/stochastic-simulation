@@ -230,17 +230,22 @@ namespace queueMM1
 
             decimal sqrtN = Convert.ToDecimal(Math.Sqrt((double)numberOfReplicas));
 
-            decimal intervalQueuingTime95 = Math.Abs(avgQueuingTimeAverage + (T95 * (varQueuingTime / sqrtN)));
-            decimal intervalQueuingTime99 = Math.Abs(avgQueuingTimeAverage + (T99 * (varQueuingTime / sqrtN)));
+            decimal sqrtVarQueuingTime = Convert.ToDecimal(Math.Sqrt((double)varQueuingTime));
+            decimal sqrtVarServiceTime = Convert.ToDecimal(Math.Sqrt((double)varServiceTime));
+            decimal sqrtVarSystemTime = Convert.ToDecimal(Math.Sqrt((double)varSystemTime));
+            decimal sqrtVarTimeBetweenArrivals = Convert.ToDecimal(Math.Sqrt((double)varTimeBetweenArrivals));
 
-            decimal intervalServiceTime95 = Math.Abs(avgServiceTimeAverage + (T95 * (varServiceTime / sqrtN)));
-            decimal intervalServiceTime99 = Math.Abs(avgServiceTimeAverage + (T99 * (varServiceTime / sqrtN)));
+            decimal intervalQueuingTime95 = Math.Abs(avgQueuingTimeAverage + (T95 * sqrtVarQueuingTime / sqrtN));
+            decimal intervalQueuingTime99 = Math.Abs(avgQueuingTimeAverage + (T99 * sqrtVarQueuingTime / sqrtN));
 
-            decimal intervalSystemTime95 = Math.Abs(avgSystemTimeAverage + (T95 * (varSystemTime / sqrtN)));
-            decimal intervalSystemTime99 = Math.Abs(avgSystemTimeAverage + (T99 * (varSystemTime / sqrtN)));
+            decimal intervalServiceTime95 = Math.Abs(avgServiceTimeAverage + (T95 * sqrtVarServiceTime / sqrtN));
+            decimal intervalServiceTime99 = Math.Abs(avgServiceTimeAverage + (T99 * sqrtVarServiceTime / sqrtN));
 
-            decimal intervalTimeBetweenArrivals95 = Math.Abs(avgTimeBetweenArrivalsAverage + (T95 * (varTimeBetweenArrivals / sqrtN)));
-            decimal intervalTimeBetweenArrivals99 = Math.Abs(avgTimeBetweenArrivalsAverage + (T99 * (varTimeBetweenArrivals / sqrtN)));
+            decimal intervalSystemTime95 = Math.Abs(avgSystemTimeAverage + (T95 * sqrtVarSystemTime / sqrtN));
+            decimal intervalSystemTime99 = Math.Abs(avgSystemTimeAverage + (T99 * sqrtVarSystemTime / sqrtN));
+
+            decimal intervalTimeBetweenArrivals95 = Math.Abs(avgTimeBetweenArrivalsAverage + (T95 * (sqrtVarTimeBetweenArrivals / sqrtN)));
+            decimal intervalTimeBetweenArrivals99 = Math.Abs(avgTimeBetweenArrivalsAverage + (T99 * (sqrtVarTimeBetweenArrivals / sqrtN)));
 
             Console.Write("\n\nReplicas: \n\n");
 
