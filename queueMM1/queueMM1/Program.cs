@@ -49,7 +49,7 @@ namespace queueMM1
                 listQueuing.Clear();
 
                 RandomNumberGenerator random = new RandomNumberGenerator(SEED);
-                SEED += 1;
+                SEED += 2;
 
                 #region Process
                 decimal timeBetweenArrivals = 0;
@@ -151,6 +151,7 @@ namespace queueMM1
                     avgTimeBetweenArrivals += arrival.TimeBetweenArrivals;
                     avgServiceTime += arrival.ServiceTime;
                 }
+
                 avgQueuingTime = avgQueuingTime / numberOfClients;
                 avgSystemTime = avgSystemTime / numberOfClients;
                 avgTimeBetweenArrivals = avgTimeBetweenArrivals / numberOfClients;
@@ -200,13 +201,19 @@ namespace queueMM1
                 avgSystemTimeAverage += replica.AvgSystemTime;
                 avgTimeBetweenArrivalsAverage += replica.AvgTimeBetweenArrivals;
 
-                //Square Ave1rages Sum(M²)
-                avgQueuingTimeAverageSquare += replica.AvgQueuingTime * replica.AvgQueuingTime;
+                //Square Averages Sum(M²)
+                avgQueuingTimeAverageSquare += (replica.AvgQueuingTime * replica.AvgQueuingTime);
                 avgServiceTimeAverageSquare += replica.AvgServiceTime * replica.AvgServiceTime;
                 avgSystemTimeAverageSquare += replica.AvgSystemTime * replica.AvgSystemTime;
                 avgTimeBetweenArrivalsAverageSquare += replica.AvgTimeBetweenArrivals * replica.AvgTimeBetweenArrivals;
             }
 
+            // Calculating Average
+            avgQueuingTimeAverage = avgQueuingTimeAverage / numberOfReplicas;
+            avgServiceTimeAverage = avgServiceTimeAverage / numberOfReplicas;
+            avgSystemTimeAverage = avgSystemTimeAverage / numberOfReplicas;
+            avgTimeBetweenArrivalsAverage = avgTimeBetweenArrivalsAverage / numberOfReplicas;
+            
             // (Sum(M)²) / n
             decimal varQueuingTime = (avgQueuingTimeAverage * avgQueuingTimeAverage) / numberOfReplicas;
             decimal varServiceTime = (avgServiceTimeAverage * avgServiceTimeAverage) / numberOfReplicas;
@@ -214,16 +221,10 @@ namespace queueMM1
             decimal varTimeBetweenArrivals = (avgTimeBetweenArrivalsAverage * avgTimeBetweenArrivalsAverage) / numberOfReplicas;
 
             // Calculating Var
-            varQueuingTime = (avgQueuingTimeAverageSquare - varQueuingTime) / (numberOfReplicas - 1);
-            varServiceTime = (avgServiceTimeAverageSquare - varServiceTime) / (numberOfReplicas - 1);
-            varSystemTime = (avgSystemTimeAverageSquare - varSystemTime) / (numberOfReplicas - 1);
-            varTimeBetweenArrivals = (avgTimeBetweenArrivalsAverageSquare - varTimeBetweenArrivals) / (numberOfReplicas - 1);
-
-            // Calculating Average
-            avgQueuingTimeAverage = avgQueuingTimeAverage / numberOfReplicas;
-            avgServiceTimeAverage = avgServiceTimeAverage / numberOfReplicas;
-            avgSystemTimeAverage = avgSystemTimeAverage / numberOfReplicas;
-            avgTimeBetweenArrivalsAverage = avgTimeBetweenArrivalsAverage / numberOfReplicas;
+            varQueuingTime = ((avgQueuingTimeAverageSquare /numberOfReplicas) - varQueuingTime) / (numberOfReplicas - 1);
+            varServiceTime = ((avgServiceTimeAverageSquare / numberOfReplicas) - varServiceTime) / (numberOfReplicas - 1);
+            varSystemTime = ((avgSystemTimeAverageSquare / numberOfReplicas) - varSystemTime) / (numberOfReplicas - 1);
+            varTimeBetweenArrivals = ((avgTimeBetweenArrivalsAverageSquare / numberOfReplicas) - varTimeBetweenArrivals) / (numberOfReplicas - 1);
 
             const decimal T95 = 1.96M;
             const decimal T99 = 1.28M;
