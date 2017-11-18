@@ -272,6 +272,7 @@ namespace queueMM1
         private static decimal GetRandomTimeBetweeArrival(decimal timeBetweenArrivals)
         {
             //Gera o tempo entre as chegadas baseado em um número aleatório
+            //Os intervalos foram calculados utilizando a técnica do ponto médio
 
             if (timeBetweenArrivals <= 0.52M)
                 return 1;
@@ -289,6 +290,7 @@ namespace queueMM1
         private static decimal GetRandomServiceTime(decimal serviceTime)
         {
             //Gera o tempo de serviço baseado em um número aleatório
+            //Os intervalos foram calculados utilizando a técnica do ponto médio
 
             if (serviceTime <= 0.5M)
                 return 1.25M;
