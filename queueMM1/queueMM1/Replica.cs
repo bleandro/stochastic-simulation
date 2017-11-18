@@ -8,6 +8,11 @@ namespace queueMM1
 {
     public class Replica
     {
+        /*
+         * Classe que armazena as réplicas
+         * E todas as informações referentes às réplicas (inclusive a lista de chegadas)
+         */
+
         #region Properties
         private List<Arrival> listArrivals;
         private decimal avgTimeBetweenArrivals = 0;

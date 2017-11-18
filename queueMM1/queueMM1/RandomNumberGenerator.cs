@@ -17,6 +17,7 @@ namespace queueMM1
 			this.ISEED = _ISEED;
 		}
 
+        //Gerador de número pseudo-aleatórios visto em aula
 		public decimal Next()
 		{
 			decimal RMOD, DMAX;
@@ -29,7 +30,7 @@ namespace queueMM1
 
 			RMOD = RMOD - (PMOD * IMOD);
 
-			//New value of ISEED
+			//Novo valor de ISEED
 			this.ISEED = Convert.ToInt32(Math.Floor(RMOD));
 
 			return (RMOD * DMAX);

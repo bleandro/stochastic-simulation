@@ -1,42 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace queueMM1
 {
 	public class Program
 	{
+        /*
+         * Programa principal
+         * Lê as informações e realiza os cálculos, simulando a fila
+         */
+
         public static void Main()
         {
-            try
-            {
-                if (File.Exists("planilha.csv"))
-                    File.Delete("planilha.csv");
-            }
-            catch (Exception) { }
-            StreamWriter file = new StreamWriter("planilha.csv");
-
             #region Inputs
+
+            //Armazena o valor que será usado como a semente inicial
             int SEED;
             Console.WriteLine("Valor inicial ou semente:");
             SEED = Convert.ToInt32(Console.ReadLine());
 
+            //Armazena o número de réplicas que serão geradas
             int numberOfReplicas;
             Console.WriteLine("Quantidade de replicas a serem realizadas:");
             numberOfReplicas = Convert.ToInt32(Console.ReadLine());
 
+            //Armazena o número de clientes (testes) que serão gerados para cada réplica
             int numberOfClients;
             Console.WriteLine("Quantidade de testes a serem realizados:");
             numberOfClients = Convert.ToInt32(Console.ReadLine());
             #endregion
 
             #region Lists
-            List<Arrival> listQueuing = new List<Arrival>();
-            List<Arrival> listArrivals = new List<Arrival>();
-            List<Replica> listReplicas = new List<Replica>();
+            List<Arrival> listQueuing = new List<Arrival>(); //Lista que armazena quantidade de clientes na fila
+            List<Arrival> listArrivals = new List<Arrival>(); //Lista que armazena cada chegada de cliente
+            List<Replica> listReplicas = new List<Replica>(); //Lista que armazena os dados de cada réplica
             #endregion
 
             #region Round
@@ -45,11 +42,15 @@ namespace queueMM1
             #region Replica
             for (int wCont = 0; wCont < numberOfReplicas; wCont++)
             {
+                //Limpa listas para começar nova réplica
                 listArrivals.Clear();
                 listQueuing.Clear();
 
+                //Objeto para geração de números pseudo-aleatórios (iniciado com a semente)
                 RandomNumberGenerator random = new RandomNumberGenerator(SEED);
-                SEED += 2;
+
+                //Incremente semente para gerar números diferentes a cada réplica
+                SEED += 1;
 
                 #region Process
                 decimal timeBetweenArrivals = 0;
@@ -64,30 +65,35 @@ namespace queueMM1
                 {
                     Arrival newArrival = new Arrival();
 
+                    //Gera tempo entre chegadas de acordo com número aleatório gerado
                     timeBetweenArrivals = GetRandomTimeBetweeArrival(random.Next());
+
+                    //Gera tempo de serviço de acordo com número aleatório gerado
                     serviceTime = GetRandomServiceTime(random.Next());
 
+                    //Calcula tempo atual incrementando de acordo com os tempos entre as chegadas
                     timeCurrent += timeBetweenArrivals;
 
-                    #region Calculate
+                    #region Cálculos
                     queuingTime = 0;
                     if (timeCurrent < finalTime)
                         queuingTime = (finalTime - timeCurrent);
 
-                    // If there's queuingTime, We need to add a person to the Queue
+                    // Se houver tempo de fila, precisamos adicionar um cliente à fila
                     if (queuingTime > 0)
                         listQueuing.Add(newArrival);
 
                     initialTime = timeCurrent + queuingTime;
                     freeTime = initialTime - finalTime;
 
-                    //Calculate new finalTime
+                    //Calcula o "novo" tempo final
                     finalTime = initialTime + serviceTime;
 
                     #endregion
 
-                    #region Creating Arrival Object
+                    #region Criando um novo objeto para armazenar tempos de chegadas
 
+                    //Objeto que armazena os dados de chegadas
                     newArrival.TimeBetweenArrivals = timeBetweenArrivals;
                     newArrival.ServiceTime = serviceTime;
                     newArrival.TimeCurrent = timeCurrent;
@@ -98,39 +104,8 @@ namespace queueMM1
                     listArrivals.Add(newArrival);
 
                     #endregion
-
-                    #region Output
-                    /*
-                    //Output to a file
-                    file.WriteLine(String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8}",
-                        newArrival.TimeBetweenArrivals,
-                        newArrival.ServiceTime,
-                        newArrival.TimeCurrent,
-                        newArrival.InitialTime,
-                        newArrival.FinalTime,
-                        newArrival.QueuingTime,
-                        newArrival.SystemTime,
-                        newArrival.NumberOfPeopleInQueue,
-                        newArrival.FreeTime
-                    ));
-
-                    //Output to Console
-                    Console.WriteLine(
-                        String.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8}",
-                        newArrival.TimeBetweenArrivals,
-                        newArrival.ServiceTime,
-                        newArrival.TimeCurrent,
-                        newArrival.InitialTime,
-                        newArrival.FinalTime,
-                        newArrival.QueuingTime,
-                        newArrival.SystemTime,
-                        newArrival.NumberOfPeopleInQueue,
-                        newArrival.FreeTime
-                    ));
-                    */
-                    #endregion
-
-                    #region Decrease People in Queue
+                                        
+                    #region Decrementa pessoas na fila
                     for (int jCont = listQueuing.Count - 1; jCont >= 0; jCont--)
                     {
                         if (listQueuing[jCont].FinalTime < timeCurrent)
@@ -139,11 +114,13 @@ namespace queueMM1
                     #endregion
                 }
 
-                #region Calculate statistics
+                #region Calcula estatísticas
                 decimal avgQueuingTime = 0;
                 decimal avgSystemTime = 0;
                 decimal avgTimeBetweenArrivals = 0;
                 decimal avgServiceTime = 0;
+
+                //Calcula média para cada tempo da fila
                 foreach (Arrival arrival in listArrivals)
                 {
                     avgQueuingTime += arrival.QueuingTime;
@@ -160,24 +137,15 @@ namespace queueMM1
 
                 #endregion
 
-                #region Creating Replica Object
+                #region Criando objeto para armazenar dados de cada réplica
+
                 Replica newReplica = new Replica();
                 newReplica.AvgQueuingTime = avgQueuingTime;
                 newReplica.AvgSystemTime = avgSystemTime;
                 newReplica.AvgTimeBetweenArrivals = avgTimeBetweenArrivals;
                 newReplica.AvgServiceTime = avgServiceTime;
                 listReplicas.Add(newReplica);
-
-
-                Console.WriteLine(
-                    String.Format(
-                        "\n\n\n" +
-                        "Média tempo de fila: {0}\n" +
-                        "Média tempo de sistema: {1}\n" +
-                        "Média tempo entre chegadas: {2}\n" +
-                        "Média tempo de serviço: {3}"
-                        , newReplica.AvgQueuingTime, newReplica.AvgSystemTime, newReplica.AvgTimeBetweenArrivals, newReplica.AvgServiceTime
-                    ));
+                
                 #endregion
 
             }
@@ -195,20 +163,20 @@ namespace queueMM1
 
             foreach (Replica replica in listReplicas)
             {
-                //Average of Averages Sum(M)
+                //Média das médias Sum(M)
                 avgQueuingTimeAverage += replica.AvgQueuingTime;
                 avgServiceTimeAverage += replica.AvgServiceTime;
                 avgSystemTimeAverage += replica.AvgSystemTime;
                 avgTimeBetweenArrivalsAverage += replica.AvgTimeBetweenArrivals;
 
-                //Square Averages Sum(M²)
+                //Quadrado das médias Sum(M²)
                 avgQueuingTimeAverageSquare += (replica.AvgQueuingTime * replica.AvgQueuingTime);
                 avgServiceTimeAverageSquare += replica.AvgServiceTime * replica.AvgServiceTime;
                 avgSystemTimeAverageSquare += replica.AvgSystemTime * replica.AvgSystemTime;
                 avgTimeBetweenArrivalsAverageSquare += replica.AvgTimeBetweenArrivals * replica.AvgTimeBetweenArrivals;
             }
 
-            // Calculating Average
+            // Calculando médias
             avgQueuingTimeAverage = avgQueuingTimeAverage / numberOfReplicas;
             avgServiceTimeAverage = avgServiceTimeAverage / numberOfReplicas;
             avgSystemTimeAverage = avgSystemTimeAverage / numberOfReplicas;
@@ -220,22 +188,29 @@ namespace queueMM1
             decimal varSystemTime = (avgSystemTimeAverage * avgSystemTimeAverage) / numberOfReplicas;
             decimal varTimeBetweenArrivals = (avgTimeBetweenArrivalsAverage * avgTimeBetweenArrivalsAverage) / numberOfReplicas;
 
-            // Calculating Var
+            // Calculando variâncias
             varQueuingTime = ((avgQueuingTimeAverageSquare /numberOfReplicas) - varQueuingTime) / (numberOfReplicas - 1);
             varServiceTime = ((avgServiceTimeAverageSquare / numberOfReplicas) - varServiceTime) / (numberOfReplicas - 1);
             varSystemTime = ((avgSystemTimeAverageSquare / numberOfReplicas) - varSystemTime) / (numberOfReplicas - 1);
             varTimeBetweenArrivals = ((avgTimeBetweenArrivalsAverageSquare / numberOfReplicas) - varTimeBetweenArrivals) / (numberOfReplicas - 1);
 
+
+            #region Cálculo para o intervalo de confiança
+
+            //Constante de T-student para o intervalo de confiança com precisão de 95% e 99%, respectivamente
             const decimal T95 = 1.96M;
             const decimal T99 = 1.28M;
 
+            //Raiz(N)
             decimal sqrtN = Convert.ToDecimal(Math.Sqrt((double)numberOfReplicas));
 
+            //Raiz(var)
             decimal sqrtVarQueuingTime = Convert.ToDecimal(Math.Sqrt((double)varQueuingTime));
             decimal sqrtVarServiceTime = Convert.ToDecimal(Math.Sqrt((double)varServiceTime));
             decimal sqrtVarSystemTime = Convert.ToDecimal(Math.Sqrt((double)varSystemTime));
             decimal sqrtVarTimeBetweenArrivals = Convert.ToDecimal(Math.Sqrt((double)varTimeBetweenArrivals));
 
+            //Calculando os intervalos de confiança
             decimal intervalQueuingTime95 = Math.Abs(avgQueuingTimeAverage + (T95 * sqrtVarQueuingTime / sqrtN));
             decimal intervalQueuingTime99 = Math.Abs(avgQueuingTimeAverage + (T99 * sqrtVarQueuingTime / sqrtN));
 
@@ -248,8 +223,11 @@ namespace queueMM1
             decimal intervalTimeBetweenArrivals95 = Math.Abs(avgTimeBetweenArrivalsAverage + (T95 * (sqrtVarTimeBetweenArrivals / sqrtN)));
             decimal intervalTimeBetweenArrivals99 = Math.Abs(avgTimeBetweenArrivalsAverage + (T99 * (sqrtVarTimeBetweenArrivals / sqrtN)));
 
+            #endregion
+
             Console.Write("\n\nReplicas: \n\n");
 
+            //Escreve na tela os resultados obtidos
             Console.WriteLine(
                 String.Format(
                     "Media das medias tempo de fila: {0}\n" +
@@ -273,6 +251,7 @@ namespace queueMM1
                     varTimeBetweenArrivals
             ));
 
+            //Escreve na tela os resultados obtidos
             Console.WriteLine(
                 $"Intervalo 95 tempo de fila: +-{intervalQueuingTime95}\n" +
                 $"Intervalo 95 tempo de serviço: +-{intervalServiceTime95}\n" +
@@ -292,6 +271,8 @@ namespace queueMM1
 
         private static decimal GetRandomTimeBetweeArrival(decimal timeBetweenArrivals)
         {
+            //Gera o tempo entre as chegadas baseado em um número aleatório
+
             if (timeBetweenArrivals <= 0.52M)
                 return 1;
             else if (timeBetweenArrivals <= 0.8M)
@@ -307,6 +288,8 @@ namespace queueMM1
 
         private static decimal GetRandomServiceTime(decimal serviceTime)
         {
+            //Gera o tempo de serviço baseado em um número aleatório
+
             if (serviceTime <= 0.5M)
                 return 1.25M;
             else if (serviceTime <= 0.82M)

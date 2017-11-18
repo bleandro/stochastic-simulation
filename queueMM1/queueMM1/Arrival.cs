@@ -8,6 +8,12 @@ namespace queueMM1
 {
 	public class Arrival
 	{
+        /*
+         * Classe que armazena as Chegadas
+         * E todas as informações de cada Chegada
+         */
+
+
 		#region Fields
 		private decimal timeBetweenArrivals;
 		private decimal serviceTime;
